@@ -71,15 +71,15 @@ def getBinDetails(bin: str, details: bool):
 
     except Exception as e:
         print("okokokok")
-        print(e);
+        print(e.with_traceback);
 
     # print("hellohello")
     # return
 
 
 # Example usage:
-# url: str = getFilebinURL();
-details = getBinDetails("ryjxnq6pf6j8ldy4", False)
+url: str = getFilebinURL();
+details = getBinDetails(url, False)
 
 print("-" * 40)
 if details:
