@@ -73,7 +73,7 @@ def getBinDetails(bin: str, details: bool):
 
 
 
-def downloadFile(bin, filename) -> bool:
+def downloadFile(bin, filename) -> None:
 
     print(f"https://filebin.net/{bin}/{filename}");
     
@@ -89,7 +89,9 @@ def downloadFile(bin, filename) -> bool:
 
         if response.status_code != 200:
             print(f"ERROR! The Filbin api returend code: {response.status_code}")
-            return False;
+            return None;
+        
+           
         
         elif response.status_code == 200:
             # print("request successfull")
@@ -103,11 +105,11 @@ def downloadFile(bin, filename) -> bool:
                     if chunk:  # Make sure there's content in the chunk
                         f.write(chunk)
 
-            return True
 
     except Exception as e:
         logging.info(f"{filename} couldn't be downloaded, error: {e}")
-        return False;
+        print(f"Error occured, {e}")
+        raise e
 
 
 # Example usage:
