@@ -73,7 +73,7 @@ def getBinDetails(bin: str, details: bool):
 
 
 
-def downloadFile(bin, filename) -> None:
+def downloadFile(bin, filename) -> bool:
 
     print(f"https://filebin.net/{bin}/{filename}");
     
@@ -89,38 +89,25 @@ def downloadFile(bin, filename) -> None:
 
         if response.status_code != 200:
             print(f"ERROR! The Filbin api returend code: {response.status_code}")
-            return None;
+            return False;
         
         elif response.status_code == 200:
             # print("request successfull")
             # json_data = response.json();
             # print(json_data);
 
-            print("Downloading the file!")
+            print("Downloading the file in root directory!")
             with open(filename, 'wb') as f:
                 # Iterate over the content in chunks
                 for chunk in response.iter_content(chunk_size=(1024 * 1024)):
                     if chunk:  # Make sure there's content in the chunk
                         f.write(chunk)
 
-        # elif response.status_code == 200:
-        #     print("Redirected to:", response.headers['Location'])
-        #     # Now you can download from the new URL
-        #     redirect_url = response.headers['Location']
-        #     download_response = requests.get(redirect_url, stream=True)
-
-        #     # if download_response.status_code == 200:
-        #     with open(filename, 'wb') as f:
-        #         for chunk in download_response.iter_content(chunk_size=8192):  # 1 MB chunks
-        #             if chunk:
-        #                 f.write(chunk)
-        #     print("Download complete!")
-        #     # else:
-        #     print(f"Failed to download from redirect URL, status code: {download_response.status_code}")
-        
+            return True
 
     except Exception as e:
         logging.info(f"{filename} couldn't be downloaded, error: {e}")
+        return False;
 
 
 # Example usage:
