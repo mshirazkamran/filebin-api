@@ -30,23 +30,22 @@ pip install -e .
 ## ⚡ Usage
 
 ```bash
-filebin <path-to-your-file>
+To be added! 0
 ```
 
 ### Example:
 
 ```bash
-filebin my_photo.png
+To be added! 1
 ```
 
 Output:
 
 ```
-File uploaded successfully!
-🔗 https://filebin.net/abcd1234/my_photo.png
+To be added! 2
 ```
 
-Just copy the link and share it — done.
+Just copy the link and share it, This is all it requires  (:
 
 ---
 
@@ -62,9 +61,3 @@ These will be installed automatically when you install the tool.
 ## 🧑‍💻 Author
 
 Made by [@mshirazkamran](https://github.com/mshirazkamran)
-
----
-
-## 📜 License
-
-This project uses the MIT License.
