@@ -68,7 +68,7 @@ def getBinDetails(bin: str, details: bool):
         return files
 
     except Exception as e:
-        print("okokokok")
+        print(f"An error occured while fetching the bin: {bin}")
         print(e.with_traceback);
 
 
@@ -120,7 +120,7 @@ def downloadFile(bin, filename) -> None:
         
 
     except Exception as e:
-        logging.info("File couldnt be downloaded, error: ", e)
+        logging.info(f"{filename} couldn't be downloaded, error: {e}")
 
 
 # Example usage:
