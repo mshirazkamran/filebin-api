@@ -4,6 +4,44 @@ import logging
 
 def main() -> None:
     print("TOOL RUNNING")
+                                    # Example usage:
+    url: str = "qrk6qk1bwsf29slm"
+    details = getBinDetails(url, False)
+
+
+    filenames = {}
+
+    print("-" * 40)
+
+    if details:
+        i = 1;
+        for detail in details:
+
+            pprint.pprint(detail, indent=4, width=100);
+
+            # Find the start and end positions of the filename
+            temp = str(detail)
+            start = temp.find("'filename': '") + len("'filename': '")
+            end = temp.find("'", start)
+            
+            if start != -1 and end != -1:
+                # Extract the filename and add it to the list
+                filenames.setdefault(i, temp[start:end])
+                i = i + 1
+
+
+            print("-" * 40)
+
+    print(filenames)
+
+    print("Please tell the number of file to download:");
+    key: int = int(input()); 
+    fileToDownload = filenames.get(key);
+    downloadFile(url, fileToDownload);
+
+
+    print("-" * 40)
+    pprint.pprint(details)
 
 
 logging.basicConfig(format='%(asctime)s: %(message)s', datefmt='%m%d%y %I:%M:%S %p')
@@ -111,44 +149,7 @@ def downloadFile(bin, filename) -> None:
         print(f"Error occured, {e}")
         raise e
 
+main();
 
-# Example usage:
-# url: str = getFilebinURL();
-# url: str = "qrk6qk1bwsf29slm"
-# details = getBinDetails(url, False)
-
-
-# filenames = {}
-
-# print("-" * 40)
-
-# if details:
-#     i = 1;
-#     for detail in details:
-
-        # pprint.pprint(detail, indent=4, width=100);
-
-        # Find the start and end positions of the filename
-        # temp = str(detail)
-        # start = temp.find("'filename': '") + len("'filename': '")
-        # end = temp.find("'", start)
-        
-        # if start != -1 and end != -1:
-        #     # Extract the filename and add it to the list
-        #     filenames.setdefault(i, temp[start:end])
-        #     i = i + 1
-
-
-        # print("-" * 40)
-
-# print(filenames)
-
-# print("Please tell the number of file to download:");
-# key: int = int(input()); 
-# fileToDownload = filenames.get(key);
-# downloadFile(url, fileToDownload);
-
-
-
-# print("-" * 40)
-# pprint.pprint(details)
+if "__name__" in "__main__":
+    main();
