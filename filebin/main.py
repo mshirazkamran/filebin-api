@@ -1,9 +1,16 @@
 import requests
 import pprint
-import logging
+import click
+
+
+@click.group()
+def cli() -> None:
+    """Main CLI group"""
+    pass
+
 
 def main() -> None:
-    print("TOOL RUNNING")
+    click.echo("TOOL RUNNING")
                                     # Example usage:
     url: str = "qrk6qk1bwsf29slm"
     details = getBinDetails(url, False)
@@ -11,7 +18,7 @@ def main() -> None:
 
     filenames = {}
 
-    print("-" * 40)
+    click.echo("-" * 40)
 
     if details:
         i = 1;
@@ -30,23 +37,25 @@ def main() -> None:
                 i = i + 1
 
 
-            print("-" * 40)
+            click.echo("-" * 40)
 
-    print(filenames)
+    click.echo(filenames)
 
-    print("Please tell the number of file to download:");
+    click.echo("Please tell the number of file to download:");
     key: int = int(input()); 
     fileToDownload = filenames.get(key);
     downloadFile(url, fileToDownload);
 
 
-    print("-" * 40)
+    click.echo("-" * 40)
     pprint.pprint(details)
 
 
-logging.basicConfig(format='%(asctime)s: %(message)s', datefmt='%m%d%y %I:%M:%S %p')
+
+
 
 def getFilebinURL() -> str:
+
     req = requests.get("https://filebin.net")
     binURL_index: int = str(req.text).find("binURL")  # Find the position of 'binURL'
 
@@ -57,17 +66,37 @@ def getFilebinURL() -> str:
     temp: str = str(req.text)
     url: str = temp[start_index:end_index]
     finalURL = url.strip().rstrip('";')
-    logging.info(f"final url is: ${finalURL}");
-    print("final url is: " + finalURL)
+    click.echo("final url is: " + finalURL)
 
     return finalURL
+
+
+
+@click.command(name = "upload")
+@click.option("--fbin", help = "Upload files to a bin. The bin is auto created if not specified with the --bin flag")
+@click.argument("path")
+def uploadFile(path: str, fbin: str) -> None:
+
+    if (fbin):
+        pass
+        # TODO: upload file/files to a bin
+    else:
+        click.echo("Creating a bin...")
+        URL: str = getFilebinURL()
+        if not (len(URL)  >= 8 and  len(URL) <= 20):
+            click.echo("An issue was encoutnered while creating a bin", err=True)
+            return
+
+        click.echo(click.style(f"Your bin has been created at: {URL}", fg="green"))
+        # TODO:implement further :
+
 
 
 
 
 def getBinDetails(bin: str, details: bool):
 
-    print(f"https://filebin.net/{bin}");
+    click.echo(f"https://filebin.net/{bin}");
     try: 
         response = requests.get(f"https://filebin.net/{bin}", headers={
             "accept": "application/json"
@@ -75,11 +104,11 @@ def getBinDetails(bin: str, details: bool):
         files = []
 
         if response.status_code != 200:
-            print(f"ERROR! The Filbin api returend code: ${response.status_code}")
+            click.echo(f"ERROR! The Filbin api returend code: ${response.status_code}")
             return None;
         
         elif response.status_code == 200:
-            print("Response was successfull!")
+            click.echo("Response was successfull!")
             json_data = response.json()
             json_files = json_data["files"]
 
@@ -106,14 +135,14 @@ def getBinDetails(bin: str, details: bool):
         return files
 
     except Exception as e:
-        print(f"An error occured while fetching the bin: {bin}")
-        print(e.with_traceback);
+        click.echo(f"An error occured while fetching the bin: {bin}")
+        click.echo(e.with_traceback);
 
 
 
 def downloadFile(bin, filename) -> None:
 
-    print(f"https://filebin.net/{bin}/{filename}");
+    click.echo(f"https://filebin.net/{bin}/{filename}");
     
     try: 
         response = requests.get(f"https://filebin.net/{bin}/{filename}", stream=True
@@ -122,21 +151,21 @@ def downloadFile(bin, filename) -> None:
             "Accept": "*/*"
         })
 
-        print(f"\n\n\nstatus code: ${response.status_code}\n\n");
+        click.echo(f"\n\n\nstatus code: ${response.status_code}\n\n");
         
 
         if response.status_code != 200:
-            print(f"ERROR! The Filbin api returend code: {response.status_code}")
+            click.echo(f"ERROR! The Filbin api returend code: {response.status_code}")
             return None;
         
            
         
         elif response.status_code == 200:
-            # print("request successfull")
+            # click.echo("request successfull")
             # json_data = response.json();
-            # print(json_data);
+            # click.echo(json_data);
 
-            print("Downloading the file in root directory!")
+            click.echo("Downloading the file in root directory!")
             with open(filename, 'wb') as f:
                 # Iterate over the content in chunks
                 for chunk in response.iter_content(chunk_size=(1024 * 1024)):
@@ -145,11 +174,20 @@ def downloadFile(bin, filename) -> None:
 
 
     except Exception as e:
-        logging.info(f"{filename} couldn't be downloaded, error: {e}")
-        print(f"Error occured, {e}")
+        click.echo(f"Error occured, {e}")
         raise e
+    
+    
 
-main();
+# main();
 
-if "__name__" in "__main__":
-    main();
+
+@click.command()
+@click.option("-n", "--name", prompt = "Please enter your name", help = "Prints the name")
+def greet(name: str) -> None:
+    click.echo(f"Hello {name}")
+    click.echo(f"Hello {name}")
+
+if "__name__" == "__main__":
+    # main()
+    greet()
