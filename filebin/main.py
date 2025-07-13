@@ -87,18 +87,20 @@ def uploadFile(path: str, fbin: str) -> None:
             click.echo("An issue was encoutnered while creating a bin", err=True)
             return
 
-        click.echo(click.style(f"Your bin has been created at: {URL}", fg="green"))
+        click.echo(click.style(f"Your bin has been created at: {URL}", fg="green", bold=True))
         # TODO:implement further :
 
 
 
 
+@click.command(name = "details")
+@click.argument("fbin")
+@click.option("--details", "-d", is_flag = True, default = False, help = "Print detailed metadata of files in the sepcified bin")
+def getBinDetails(fbin: str, details: bool):
 
-def getBinDetails(bin: str, details: bool):
-
-    click.echo(f"https://filebin.net/{bin}");
+    click.echo(f"fetching details of: https://filebin.net/{fbin}");
     try: 
-        response = requests.get(f"https://filebin.net/{bin}", headers={
+        response = requests.get(f"https://filebin.net/{fbin}", headers={
             "accept": "application/json"
         })
         files = []
@@ -132,26 +134,26 @@ def getBinDetails(bin: str, details: bool):
                     
                 files.append(file_details);
                 
-        return files
+        return files # files is a list of files metadata, see the above key-value pairs. 
 
     except Exception as e:
-        click.echo(f"An error occured while fetching the bin: {bin}")
+        click.echo(f"An error occured while fetching the fbin: {fbin}", err=True)
         click.echo(e.with_traceback);
 
 
+#TODO: use this in the getdetails method and also as a standalone command
+def downloadFile(fbin, filename) -> None:
 
-def downloadFile(bin, filename) -> None:
-
-    click.echo(f"https://filebin.net/{bin}/{filename}");
+    click.echo(f"Downloading file from: https://filebin.net/{fbin}/{filename}");
     
     try: 
-        response = requests.get(f"https://filebin.net/{bin}/{filename}", stream=True
+        response = requests.get(f"https://filebin.net/{fbin}/{filename}", stream=True
         , headers= {
             "User-Agent": "curl/7.68.0",  # tricks Filebin into skipping the warning page
             "Accept": "*/*"
         })
 
-        click.echo(f"\n\n\nstatus code: ${response.status_code}\n\n");
+        click.echo(f"\n\nstatus code: ${response.status_code}\n\n");
         
 
         if response.status_code != 200:
@@ -165,6 +167,8 @@ def downloadFile(bin, filename) -> None:
             # json_data = response.json();
             # click.echo(json_data);
 
+            # TODO: implement directory to download file to, default should be where the command is run
+
             click.echo("Downloading the file in root directory!")
             with open(filename, 'wb') as f:
                 # Iterate over the content in chunks
@@ -174,12 +178,16 @@ def downloadFile(bin, filename) -> None:
 
 
     except Exception as e:
-        click.echo(f"Error occured, {e}")
+        click.echo(f"Error occured, {e}", err=True)
         raise e
     
     
 
 # main();
+
+cli.add_command(getBinDetails)
+cli.add_command(uploadFile)
+
 
 
 @click.command()
@@ -190,4 +198,4 @@ def greet(name: str) -> None:
 
 if "__name__" == "__main__":
     # main()
-    greet()
+    cli()
