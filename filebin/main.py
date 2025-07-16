@@ -82,25 +82,28 @@ def getFilebinURL() -> str:
 # TODO: handle multiple files
 def uploadFile(path: str, fbin: str) -> None:
 
-    filename: str = Path(path).name; # filename is gotten from here
+    filePath: Path = Path(path)
+    if not filePath.exists() or not filePath.is_file():
+        click.secho("The script can not find the file specified, Perhaps you linked a directory!", err=True)
+        return
+
+    filename: str = filePath.name; # extract filename from path  
 
     if fbin is None:
         click.secho("Creating a bin...", bold = True)
         fbin = getFilebinURL(); # get a bin if fbin flag is not specified
+
+        if (len(fbin)  >= 8 and  len(fbin) <= 20):
+            click.secho(f"Your bin has been created at: {fbin}", fg="green", bold=True)
+        else:
+            click.echo("An issue was encoutnered while creating a bin", err=True)
+            return
+
     else:
         click.secho("Bin alraedy specified...", bold = True)
 
 
-    click.secho(f"Your bin is: {fbin}", bold = True, fg="green", bg="bright_black")
-
-
-    URL: str = getFilebinURL()
-
-    if not (len(URL)  >= 8 and  len(URL) <= 20):
-        click.echo("An issue was encoutnered while creating a bin", err=True)
-        return
-
-    click.echo(click.style(f"Your bin has been created at: {URL}", fg="green", bold=True))
+    click.secho(f"\nYour bin is: {fbin}\n", bold = True, fg="green", bg="bright_black")
 
 
     # TODO:implement further :
@@ -111,15 +114,33 @@ def uploadFile(path: str, fbin: str) -> None:
         click.secho(f"Successfully read file: {path}", fg="green")
 
     try:
-        click.echo(f"\nuploading file to: https://filebin.net/{fbin}/{filename}\n")
-        requests.post(f"https://filebin.net/{fbin}/{filename}"
+        click.echo(f"\nUploading file to: https://filebin.net/{fbin}/{filename}\n")
+        res = requests.post(f"https://filebin.net/{fbin}/{filename}"
                 , data = contents
                 , headers = {
-                    "Content-Type": "application/octet-stream"
-                })
+                    "Content-Type": "application/octet-stream",
+                    "Accept": "application/json"
+                });
+    
+        match res.status_code:
+            case 201:
+                # click.echo(f"Server replied: {pprint.pprint(res.json(), indent=3)}")
+                click.secho(f"Successfully uploaded file, {filename}", fg = "green")
+            case 400:
+                # click.echo(f"Server replied: {pprint.pprint(res.json(), indent=3)}")
+                click.secho("Invalid input, typically invalid bin or filename specified", err = True)
+            case 403:
+                click.echo("Max storage limit was reached", err=True)
+            case 404:
+                click.echo("Page not found")
+            case 405:
+                click.echo("The bin is locked and can't be written to")
+            case 500:        
+                click.echo("Internal server error")
         
     except Exception as e:
-        raise e
+        click.echo(f"An error occured while uploading the file, {e}", err=True)
+        
 
 
 
