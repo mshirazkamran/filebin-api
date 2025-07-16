@@ -11,7 +11,7 @@ setup(
     ],
     entry_points = {
         "console_scripts": [
-            'filebin = filebin.main:main',  # 'command = module:function'
+            'fbin = filebin.main:main',  # 'command = module:function'
         ],
     },
     author = "https://github.com/mshirazkamran",
