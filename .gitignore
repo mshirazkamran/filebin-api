@@ -2,3 +2,5 @@
 venv_ubuntu/
 __pycache__/
 .vscode/
+filebin/samplefiles/
+z.py
