@@ -1,0 +1,28 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "filebin-cli"
+version = "0.1"
+authors = [
+  { name="M. Shiraz Kamran", url="https://github.com/mshirazkamran" },
+]
+description = "A cli tool to temporarily share file without any hassle. Uses filebin.net public api"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+keywords = ["cli", "filebin", "file-sharing", "temporary-files"] 
+
+dependencies = [
+    "click",
+    "requests",
+]
+
+[project.scripts]
+fbin = "filebin.main:main" # 'command = module:function'
