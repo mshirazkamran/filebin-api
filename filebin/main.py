@@ -29,10 +29,10 @@ def getFilebinURL() -> str:
 
 
 @click.command(name = "upload")
-@click.option("--fbin", help = "Upload files to a bin. The bin is auto created if not specified with the --bin flag", default = None)
+@click.option("--binid", help = "Upload files to a bin. The bin is auto created if not specified with the --bin flag", default = None)
 @click.argument("paths", nargs = -1)
 # TODO: handle multiple files
-def uploadFile(paths: tuple, fbin: str) -> None:
+def uploadFile(paths: tuple, binid: str) -> None:
 
     fpaths = {}
 
@@ -45,14 +45,14 @@ def uploadFile(paths: tuple, fbin: str) -> None:
         filename: str = checkPath.name; # extract filename from paths  
         fpaths[filename] = checkPath
 
-        # uploadFileHelper(checkPath, fbin, filename)
+        # uploadFileHelper(checkPath, binid, filename)
 
-    if fbin is None:
+    if binid is None:
         click.secho("Creating a bin...", bold = True)
-        fbin = getFilebinURL(); # get a bin if fbin flag is not specified
+        binid = getFilebinURL(); # get a bin if binid flag is not specified
 
-        if (len(fbin)  >= 8 and  len(fbin) <= 20):
-            click.secho(f"Your bin has been created: {fbin}", fg="green", bold=True)
+        if (len(binid)  >= 8 and  len(binid) <= 20):
+            click.secho(f"Your bin has been created: {binid}", fg="green", bold=True)
         else:
             click.echo("An issue was encoutnered while creating a bin", err=True)
             return
@@ -62,19 +62,19 @@ def uploadFile(paths: tuple, fbin: str) -> None:
 
     # Upload files one by one from the dictionary 
     for name, path in fpaths.items():
-        uploadFileHelper(path, fbin, name)
+        uploadFileHelper(path, binid, name)
 
 
     
-def uploadFileHelper(path, fbin, filename): 
+def uploadFileHelper(path, binid, filename): 
     # "rb" specifies to read data in binary form which is application/octet-stream
     with open(path, "rb") as file:
         contents = file.read()
         click.secho(f"Successfully read {filename}", fg="green")
 
     try:
-        click.echo(f"Uploading {filename} to: https://filebin.net/{fbin}")
-        res = requests.post(f"https://filebin.net/{fbin}/{filename}"
+        click.echo(f"Uploading {filename} to: https://filebin.net/{binid}")
+        res = requests.post(f"https://filebin.net/{binid}/{filename}"
                 , data = contents
                 , headers = {
                     "Content-Type": "application/octet-stream",
@@ -84,7 +84,7 @@ def uploadFileHelper(path, fbin, filename):
         match res.status_code:
             case 201:
                 # click.echo(f"Server replied: {pprint.pprint(res.json(), indent=3)}")
-                click.secho(f"Successfully uploaded file: {filename} at: https://filebin.net/{fbin}/{filename}", fg = "green")
+                click.secho(f"Successfully uploaded file: {filename} at: https://filebin.net/{binid}/{filename}", fg = "green")
             case 400:
                 # click.echo(f"Server replied: {pprint.pprint(res.json(), indent=3)}")
                 click.secho("Invalid input, typically invalid bin or filename specified", err = True)
@@ -103,13 +103,13 @@ def uploadFileHelper(path, fbin, filename):
 
 
 @click.command(name = "details")
-@click.argument("fbin")
+@click.argument("binid")
 @click.option("--details", "-d", is_flag = True, default = False, help = "Print detailed metadata of files in the sepcified bin")
-def getBinDetails(fbin: str, details: bool):
+def getBinDetails(binid: str, details: bool):
 
-    click.echo(f"fetching details of: https://filebin.net/{fbin}");
+    click.echo(f"fetching details of: https://filebin.net/{binid}");
     try: 
-        response = requests.get(f"https://filebin.net/{fbin}", headers={
+        response = requests.get(f"https://filebin.net/{binid}", headers={
             "accept": "application/json"
         })
         files = []
@@ -158,20 +158,24 @@ def getBinDetails(fbin: str, details: bool):
          
 
     except Exception as e:
-        click.echo(f"An error occured while fetching from the bin: {fbin}", err=True)
+        click.echo(f"An error occured while fetching from the bin: {binid}", err=True)
         click.echo(e.with_traceback);
 
 
 #TODO: use this in the getdetails method and also as a standalone command
-@click.command(name = "download")
-@click.argument("fbin")
+@click.command(name = "download", help = "Use this only when you know the binId and the exact names of the file to download")
+@click.argument("binid")
 @click.argument("filenames", nargs=-1)
 @click.option("--path", "-p", default="root", help="The path to download the file to. File is downloaded in root dir if path is not specified ")
-def downloadFile(fbin: str, filenames: tuple, path: str) -> None:
+def downloadFile(binid: str, filenames: tuple, path: str) -> None:
+
+    if not filenames:
+        click.secho("No files specified. Pleas provide atleast one", err = True)
+        return
 
     tempPaths = []
 
-    # If path is root we simple save the files in the current directory
+    # If path is root we simply save the files in the current directory
     # else we need to make paths for each file where savePath variable comes into play
 
     if path != "root":
@@ -182,11 +186,11 @@ def downloadFile(fbin: str, filenames: tuple, path: str) -> None:
             # fullpath = savePath / filename
 
         else:
-            click.echo("The script could not find the path specified, Perhaps it is not a directory?", err=True)
+            click.echo("The script could not find the directory specified, Perhaps it is not a directory?", err=True)
             # TODO: ask user if he wants to download in the current directory
-            value = click.prompt("Download in the current directory? Y/n", type=str).lower()
+            value = click.prompt("Download in the current directory? Y/n", default="y", type=str).lower()
             if value in ("y","yes", "true"):
-                click.echo("Downloading file in the current directory!")
+                click.echo("Downloading files in the current directory!")
                 path = "root"
             else:
                 click.echo("Aborting the script...")
@@ -199,12 +203,16 @@ def downloadFile(fbin: str, filenames: tuple, path: str) -> None:
 
 
     for file in tempPaths:
-        # TODO: complete logic of downlaoding file one by one from the link,
+        filename = file.name
+        downloadFileHelper(binid, file, filename)
 
-    click.echo(f"Downloading file from: https://filebin.net/{fbin}/{filename}");
+    
+
+def downloadFileHelper(binid: str, fullpath: Path, filename):
+    click.echo(f"Downloading {filename} from: https://filebin.net/{binid}");
     
     try: 
-        response = requests.get(f"https://filebin.net/{fbin}/{filename}", stream=True
+        response = requests.get(f"https://filebin.net/{binid}/{filename}", stream=True
         , headers= {
             "User-Agent": "curl/7.68.0",  # tricks Filebin into skipping the warning page
             "Accept": "*/*"
@@ -239,9 +247,53 @@ def downloadFile(fbin: str, filenames: tuple, path: str) -> None:
     
 
 
+@click.command(name = "lock", help="This will make a bin read only. A read only bin does not accept new files to be uploaded or existing files to be updated. This provides some content integrity when distributing a bin to multiple parties. Note that it is possible to delete a read only bin.")
+@click.argument("binid")
+def lockBin(binid: str) -> None:
+
+    try:
+        res = requests.put(f"https://filebin.net/{binid}", 
+            headers = {
+                "Accept": "application/json"
+            })
+
+        match res.status_code:
+            case 200:
+                click.secho(f"Successfully locked the bin: {binid}", fg="green")
+            case 404:
+                click.secho(f"The bin: {binid} does not exist or is not available", err=True)
+    except Exception as e:
+        click.secho("Some error occured!", err = True)
+        click.echo(e)
+        #TODO:
+
+
+@click.command(name = "delete", help = "This will delete all files from a bin. It is not possible to reuse a bin that has been deleted. Everyone knowing the URL to the bin have access to delete it")
+@click.argument("binid")
+def deleteBin(binid: str) -> None:
+    try:
+        res = requests.delete(f"https://filebin.net/{binid}", 
+            headers = {
+                "Accept": "application/json"
+            })
+
+        match res.status_code:
+            case 200:
+                click.secho(f"Successfully deleted the bin: {binid}", fg="green")
+            case 404:
+                click.secho(f"The bin: {binid} does not exist or is not available", err=True)
+    except Exception as e:
+        click.secho("Some error occured!", err = True)
+        click.echo(e)
+        #TODO:
+
 cli.add_command(getBinDetails)
 cli.add_command(downloadFile)
 cli.add_command(uploadFile)
+cli.add_command(lockBin)
+cli.add_command(deleteBin)
+
+
 
 
 def main():
