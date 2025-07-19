@@ -1,13 +1,15 @@
-from asyncio.base_subprocess import ReadSubprocessPipeProto
-from email.policy import default
 import requests
 import click
 from pathlib import Path
-from format import format_file_details
+from .format import format_file_details
+import importlib.metadata 
+
 
 
 @click.group()
+@click.version_option(importlib.metadata.version("filebin-cli"))
 def cli() -> None:
+    """FILEBIN CLI TOOL"""
     pass
 
 
@@ -338,4 +340,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # cli()
