@@ -1,19 +1,23 @@
 import requests
 import click
 from pathlib import Path
-from .format import format_file_details
-import importlib.metadata 
 
+from re import fullmatch
+
+import pkg_resources
+
+from .utils import formatFileDetails, uploadFileHelper, downloadFileHelper
+from .encoding import isShortCode, generateEncodingFromServer, getMapping
 
 
 @click.group()
-@click.version_option(importlib.metadata.version("filebin-cli"))
+@click.version_option(pkg_resources.get_distribution("filebin-cli").version)
 def cli() -> None:
     """FILEBIN CLI TOOL"""
     pass
 
 
-def getFilebinURL() -> str:
+def getFilebinURL() -> tuple:
 
     req = requests.get("https://filebin.net")
     binURL_index: int = str(req.text).find("binURL")  # Find the position of 'binURL'
@@ -26,17 +30,37 @@ def getFilebinURL() -> str:
     url: str = temp[start_index:end_index]
     finalURL = url.strip().rstrip('";')
 
+    if fullmatch("[a-zA-Z0-9]+", finalURL) and len(finalURL) <= 18:
+        click.secho("Error getting filebin url, contact fbin dev", fg="red")
+        return (None, None)
+
+    finalShortCode, error = generateEncodingFromServer(finalURL)
+
+    if error is not None:
+        click.secho(error, fg="red")
+        return(None, None);
+
+
     # click.echo("final url is: " + finalURL)
 
-    return finalURL
+    return (finalURL, finalShortCode)
 
 
 
 @click.command(name = "upload", help = "Upload 1 or many files to the bin. Note that There is a limit to filesize.")
 @click.option("--binid", help = "Upload files to a bin. The bin is auto created if not specified with the --binid flag", default = None)
 @click.argument("paths", nargs = -1)
-# TODO: handle multiple files
-def uploadFile(paths: tuple, binid: str) -> None:
+def uploadFile(binid, paths: tuple ) -> None:
+
+    if isShortCode(binid):
+        data, error = getMapping(binid)
+
+        if error is not None:
+            click.secho(error, err=True, fg="red")
+            return
+        
+        binid = data
+
 
     if len(paths) == 0:
         click.secho("No files specified. Please specify atleast one file", err = True, fg="red")
@@ -57,13 +81,11 @@ def uploadFile(paths: tuple, binid: str) -> None:
 
     if binid is None:
         click.secho("Creating a bin...", bold = True)
-        binid = getFilebinURL(); # get a bin if binid flag is not specified
-
-        if (len(binid)  >= 8 and  len(binid) <= 20):
-            click.secho(f"Your bin has been created: {binid}", fg="green", bold=True)
-        else:
-            click.echo("An issue was encoutnered while creating a bin", err=True)
+        binid, shortcode = getFilebinURL(); # Note that this method returns a tuple
+        if binid is None:
+            click.secho("An error occured while creating a bin!", fg="red")
             return
+
     else:
         click.secho("Bin alraedy specified...", bold = True)
 
@@ -72,54 +94,24 @@ def uploadFile(paths: tuple, binid: str) -> None:
     for name, path in fpaths.items():
         uploadFileHelper(path, binid, name)
 
-
     
-def uploadFileHelper(path, binid, filename): 
-    # "rb" specifies to read data in binary form which is application/octet-stream
-    with open(path, "rb") as file:
-        contents = file.read()
-        click.secho(f"Successfully read {filename}", fg="green")
-
-    try:
-        click.echo(f"Uploading {filename} to: https://filebin.net/{binid}")
-        response = requests.post(f"https://filebin.net/{binid}/{filename}"
-                , data = contents
-                , headers = {
-                    "Content-Type": "application/octet-stream",
-                    "Accept": "application/json"
-                });
-    
-        status = response.status_code
-        if status == 201:
-            click.secho(f"Successfully uploaded file: {filename} at: https://filebin.net/{binid}/{filename}", fg="green")
-
-        elif status == 400:
-            click.secho("Invalid input, typically invalid bin or filename specified", err=True)
-
-        elif status == 403:
-            click.echo("Max storage limit was reached", err=True)
-
-        elif status == 404:
-            click.echo("Page not found", err=True)
-
-        elif status == 405:
-            click.echo("The bin is locked and can't be written to", err=True)
-
-        elif status == 500:
-            click.echo("Internal server error", err=True)
-
-        else:
-            click.echo(f"Unhandled status code: {status}", err=True)
-
-    except Exception as e:
-        click.echo(f"An error occured while uploading the file, {e}", err=True)
-
+    click.secho(f"NOTE: Your short code to use this bin is: {shortcode}", fg="green")
+    click.secho(f"You can use {shortcode} instead of the original binid", fg="green")
 
 
 @click.command(name = "details")
 @click.argument("binid")
 @click.option("--details", "-d", is_flag = True, default = False, help = "Print detailed metadata of files in the sepcified bin")
-def getBinDetails(binid: str, details: bool):
+def getBinDetails(binid, details: bool):
+
+    if isShortCode(binid):
+        data, error = getMapping(binid)
+
+        if error is not None:
+            click.secho(error, err=True, fg="red")
+            return
+        
+        binid = data
 
     click.echo(f"fetching details of: https://filebin.net/{binid}");
     try: 
@@ -129,7 +121,6 @@ def getBinDetails(binid: str, details: bool):
 
         files = []
 
-        
         if response.status_code == 200:
             click.secho("Response was successfull!", fg="green")
             json_data = response.json()
@@ -160,11 +151,8 @@ def getBinDetails(binid: str, details: bool):
         elif response.status_code == 404:
             click.secho("The bin does not exist or is not available", err = True)
             return
-
-        
-
             
-        usf: str = format_file_details(files, details)
+        usf: str = formatFileDetails(files, details)
         click.secho(usf)
         return files # files is a list of files metadata, see the above key-value pairs.
          
@@ -179,7 +167,17 @@ def getBinDetails(binid: str, details: bool):
 @click.argument("binid")
 @click.argument("filenames", nargs=-1)
 @click.option("--path", "-p", default="root", help="The path to download the file to. File is downloaded in root dir if path is not specified ")
-def downloadFile(binid: str, filenames: tuple, path: str) -> None:
+def downloadFile(binid, filenames: tuple, path: str) -> None:
+
+    if isShortCode(binid):
+        data, error = getMapping(binid)
+
+        if error is not None:
+            click.secho(error, err=True, fg="red")
+            return
+        
+        binid = data
+        
 
     if not filenames:
         click.secho("No files specified. Pleas provide atleast one", err = True)
@@ -220,51 +218,18 @@ def downloadFile(binid: str, filenames: tuple, path: str) -> None:
 
     
 
-def downloadFileHelper(binid: str, fullpath: Path, filename):
-    click.echo(f"Downloading {filename} from: https://filebin.net/{binid}");
-    
-    try: 
-        response = requests.get(f"https://filebin.net/{binid}/{filename}", stream=True
-        , headers= {
-            "User-Agent": "curl/7.68.0",  # tricks Filebin into skipping the warning page
-            "Accept": "*/*"
-        })
-
-        click.echo(f"status code: {response.status_code}");
-    
-    except Exception as e:
-        click.echo(f"Error occured, {e}", err=True)
-        raise e
-
-    status = response.status_code    
-
-    if status == 200:
-        total_size = int(response.headers.get('content-length', 0))  # Total size in bytes
-
-        try:
-            with open(fullpath, 'wb') as f:
-                with click.progressbar(length=total_size, label = filename) as bar:
-                    for chunk in response.iter_content(chunk_size=(1024 * 1024)):
-                        if chunk:
-                            f.write(chunk)
-                            bar.update(len(chunk)) 
-
-            click.secho(f"File successfully downloaded at: {fullpath.resolve()}", fg="green")
-        except Exception as e:
-            click.echo("An error occurred!", err=True)
-            # raise e
-        
-    elif status == 403:
-        click.echo("The file download count was reached", err=True)
-
-    elif status == 404:
-        click.echo("The file was not found. The bin may be expired, the file is deleted or it did never exist in the first place.", err=True)
-    
-
-
 @click.command(name = "lock", help="This will make a bin read only. A read only bin does not accept new files to be uploaded or existing files to be updated. This provides some content integrity when distributing a bin to multiple parties. Note that it is possible to delete a read only bin.")
 @click.argument("binid")
-def lockBin(binid: str) -> None:
+def lockBin(binid) -> None:
+
+    if isShortCode(binid):
+        data, error = getMapping(binid)
+
+        if error is not None:
+            click.secho(error, err=True, fg="red")
+            return
+        
+        binid = data
 
     value = click.prompt("This option is undoable, Are you sure you want to LOCK the bin? Y/n?",type=str, default="n").lower()
 
@@ -273,7 +238,6 @@ def lockBin(binid: str) -> None:
     else:
         click.echo("Aborting the script!")
         return
-
 
     try:
         response = requests.put(f"https://filebin.net/{binid}", 
@@ -297,7 +261,17 @@ def lockBin(binid: str) -> None:
 
 @click.command(name = "delete", help = "This will delete all files from a bin. It is not possible to reuse a bin that has been deleted. Everyone knowing the URL to the bin have access to delete it")
 @click.argument("binid")
-def deleteBin(binid: str) -> None:
+def deleteBin(binid) -> None:
+
+    if isShortCode(binid):
+        data, error = getMapping(binid)
+
+        if error is not None:
+            click.secho(error, err=True, fg="red")
+            return
+        
+        binid = data
+
 
     value = click.prompt("This option is undoable, Are you sure you want to DELETE the bin? Y/n?",type=str, default="n").lower()
 
@@ -325,6 +299,9 @@ def deleteBin(binid: str) -> None:
     except Exception as e:
         click.secho("Some error occured!", err = True)
         # click.echo(e)
+
+
+
 
 cli.add_command(getBinDetails)
 cli.add_command(downloadFile)

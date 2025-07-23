@@ -4,7 +4,7 @@
 
 Built with ❤️ in Python, `filebin-cli` is a simple and convenient command-line interface for interacting with the file-sharing service [filebin.net](https://filebin.net).
 
-This tool allows you to upload, download, and manage files and bins directly from your terminal, featuring progress bars for downloads, support for multiple files, and bin management capabilities.
+This tool allows you to upload, download, and manage files and bins directly from your terminal, featuring progress bars, **shortcodes for bin access**, and full bin management capabilities.
 
 ---
 
@@ -32,6 +32,7 @@ This tool allows you to upload, download, and manage files and bins directly fro
 ## Features
 
 - ⬆️ **Upload** one or multiple files to a new or existing bin.
+- ✨ **Shortcode Access**: Use **human-readable shortcodes** like `good-apple81` or `sweet-mango37` instead of remembering long bin IDs.
 - ⬇️ **Download** files with a progress bar.
 - ℹ️ **List** the contents of any bin with basic or detailed metadata.
 - 🔒 **Lock** a bin to make it read-only.
@@ -43,89 +44,109 @@ This tool allows you to upload, download, and manage files and bins directly fro
 
 Install the tool from PyPI using `pip`:
 
-```bash
-pip install filebin-cli
-```
+
+`pip install filebin-cli`
 
 ---
 
 ## Quick Start & Examples
 
+---
+
 ### 📤 Upload Files
 
-Upload a single file to a new bin:
+* **Upload a single file to a new bin:**
 
-```bash
-fbin upload document.pdf
-```
+    ```bash
+    fbin upload document.pdf
+    ```
 
-Upload multiple files to a new bin:
+* **Upload multiple files to a new bin:**
 
-```bash
-fbin upload image.jpg report.docx archive.zip
-```
+    ```bash
+    fbin upload image.jpg report.docx archive.zip
+    ```
 
-Upload a file to a specific, existing bin:
+* **Upload a file to a specific, existing bin using a bin ID:**
 
-```bash
-fbin upload --binid <your-bin-id> new-file.txt
-```
+    ```bash
+    fbin upload --binid 3s8h9gqz2d new-file.txt
+    ```
+
+* **Upload a file using a shortcode:**
+
+    ```bash
+    fbin upload --binid good-apple81 new-file.txt
+    ```
 
 ---
 
 ### 📋 Get Bin Details
 
-List the files in a bin:
+* **List the files in a bin using a bin ID:**
 
-```bash
-fbin details <your-bin-id>
-```
+    ```bash
+    fbin details 3s8h9gqz2d
+    ```
 
-Get detailed metadata for all files in a bin:
+* **List the files using a shortcode:**
 
-```bash
-fbin details -d <your-bin-id>
-```
+    ```bash
+    fbin details good-apple81
+    ```
+
+* **Get detailed metadata:**
+
+    ```bash
+    fbin details -d sweet-mango37
+    ```
 
 ---
 
 ### 📥 Download Files
 
-Download a single file from a bin to the current directory:
+* **Download a single file from a bin using bin ID:**
 
-```bash
-fbin download <your-bin-id> document.pdf
-```
+    ```bash
+    fbin download 3s8h9gqz2d document.pdf
+    ```
 
-Download multiple files:
+* **Download a single file using shortcode:**
 
-```bash
-fbin download <your-bin-id> image.jpg report.docx
-```
+    ```bash
+    fbin download sweet-mango37 document.pdf
+    ```
 
-Download files to a specific directory:
+* **Download multiple files:**
 
-```bash
-fbin download <your-bin-id> archive.zip -p /path/to/my/downloads
-```
+    ```bash
+    fbin download good-apple81 image.jpg report.docx
+    ```
+
+* **Download files to a specific directory:**
+
+    ```bash
+    fbin download good-apple81 archive.zip -p /path/to/my/downloads
+    ```
 
 ---
 
 ### 🛠️ Manage Bins
 
-Lock a bin to make it read-only (**this is permanent!**):
+* **Lock a bin (permanent action):**
 
-```bash
-fbin lock <your-bin-id>
-```
+    ```bash
+    fbin lock good-apple81
+    ```
 
-Delete an entire bin and all its contents (**this is permanent!**):
+* **Delete a bin and all contents (permanent action):**
 
-```bash
-fbin delete <your-bin-id>
-```
+    ```bash
+    fbin delete sweet-mango37
+    ```
 
 ---
+
 
 ## 🧾 Command Reference
 
@@ -133,97 +154,102 @@ fbin delete <your-bin-id>
 
 Uploads one or more files. If no `--binid` is provided, a new bin is created automatically.
 
-**Usage**:
+**Usage:**
+
 ```bash
 fbin upload [OPTIONS] [PATHS]...
-```
+````
 
-**Arguments**:
-- `PATHS...`: One or more paths to the files you want to upload.
+**Arguments:**
 
-**Options**:
-- `--binid TEXT`: Specify an existing bin ID to upload to.
+  * `PATHS...`: One or more paths to the files you want to upload.
 
----
+**Options:**
+
+  * `--binid TEXT`: Specify an existing bin ID or shortcode to upload to.
 
 ### `details`
 
 Fetches and displays the metadata for all files in a specified bin.
 
-**Usage**:
+**Usage:**
+
 ```bash
-fbin details [OPTIONS] BINID
+fbin details [OPTIONS] BINID_OR_SHORTCODE
 ```
 
-**Arguments**:
-- `BINID`: The ID of the bin you want to inspect.
+**Arguments:**
 
-**Options**:
-- `-d`, `--details`: Display detailed metadata, including timestamps and MD5 hash.
+  * `BINID_OR_SHORTCODE`: The ID or shortcode of the bin you want to inspect.
 
----
+**Options:**
+
+  * `-d, --details`: Display detailed metadata, including timestamps and MD5 hash.
 
 ### `download`
 
 Downloads one or more files from a bin.
 
-**Usage**:
+**Usage:**
+
 ```bash
-fbin download [OPTIONS] BINID [FILENAMES]...
+fbin download [OPTIONS] BINID_OR_SHORTCODE [FILENAMES]...
 ```
 
-**Arguments**:
-- `BINID`: The ID of the bin to download from.
-- `FILENAMES...`: The exact name(s) of the file(s) to download.
+**Arguments:**
 
-**Options**:
-- `-p`, `--path TEXT`: The local directory path where files should be saved. Defaults to the current directory.
+  * `BINID_OR_SHORTCODE`: The ID or shortcode of the bin to download from.
+  * `FILENAMES...`: The exact name(s) of the file(s) to download.
 
----
+**Options:**
+
+  * `-p, --path TEXT`: The local directory path where files should be saved. Defaults to the current directory.
 
 ### `lock`
 
 Permanently locks a bin, making it read-only. No new files can be uploaded.
 
-**Usage**:
+**Usage:**
+
 ```bash
-fbin lock BINID
+fbin lock BINID_OR_SHORTCODE
 ```
 
-**Arguments**:
-- `BINID`: The ID of the bin to lock.
+**Arguments:**
 
----
+  * `BINID_OR_SHORTCODE`: The ID or shortcode of the bin to lock.
 
 ### `delete`
 
 Permanently deletes a bin and all of its contents.
 
-**Usage**:
+**Usage:**
+
 ```bash
-fbin delete BINID
+fbin delete BINID_OR_SHORTCODE
 ```
 
-**Arguments**:
-- `BINID`: The ID of the bin to delete.
+**Arguments:**
 
----
+  * `BINID_OR_SHORTCODE`: The ID or shortcode of the bin to delete.
+
+-----
 
 ## 🔧 Requirements
 
-- `click`
-- `requests`
+  * `click`
+  * `requests`
 
 These will be installed automatically when you install the tool.
 
----
+-----
 
 ## 🧑‍💻 Author
 
 Made by [@mshirazkamran](https://github.com/mshirazkamran)
 
----
+-----
 
 ## LICENSE
 
-This tool is Licensed under the MIT license 
+This tool is Licensed under the MIT license.

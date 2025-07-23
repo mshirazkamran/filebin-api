@@ -1,4 +1,4 @@
-# pyproject.toml
+# TODO: need to chnage the links of source and Homepage
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "filebin-cli"
-version = "0.2"
+version = "0.3"
 authors = [
   { name="M. Shiraz Kamran", email="dev.mshiraz@gmail.com" },
 ]
@@ -29,4 +29,4 @@ fbin = "filebin.main:main" # 'command = module:function'
 
 [project.urls]
 "Source" = "https://github.com/mshirazkamran/filebin-cli"
-"Homepage" = "https://github.com/mshirazkamran/filebin-cli"
+"Docs" = "https://github.com/mshirazkamran/filebin-api?tab=readme-ov-file#-filebin-cli"
