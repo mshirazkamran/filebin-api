@@ -5,7 +5,8 @@ from pathlib import Path
 from re import fullmatch
 import pkg_resources
 
-from .utils import downloadArchiveHelper, formatFileDetails, uploadFileHelper, downloadFileHelper
+from .utils import downloadArchiveHelper, formatFileDetails
+from .utils import uploadFileHelper, downloadFileHelper, tempFilenameGenerator
 from .encoding import isShortCode, generateEncodingFromServer, getMapping
 
 
@@ -307,10 +308,13 @@ def deleteBin(binid) -> None:
         # click.secho(e)
 
 
-@click.command(name = "tar", help = "Get all the files of the bin in tar archive")
+@click.command(name = "archive", help = "Get all the files of the bin in zip or tar archive")
 @click.argument("binid")
-@click.option("--path", "-p",default="root", help="The path to download the archive to")
-def downloadBinAsTAR(binid, path):
+@click.option("--path", "-p", default="root", help="The path to download the archive to")
+@click.option("--type", "-t", required=True, type=click.Choice(["tar", "zip"]), help="Archive type")
+def downloadBinAsArchive(binid, path, type):
+
+    filename = tempFilenameGenerator(type)
 
     if isShortCode(binid):
         data, error = getMapping(binid)
@@ -323,13 +327,12 @@ def downloadBinAsTAR(binid, path):
 
 
     if path != "root":
-        savePath = Path(path)
+        savePath = Path(path) # done to check its existence and is_dir()
         if savePath.exists() and savePath.is_dir():
-            fullpath = savePath / "archive.tar"
+            fullpath = savePath / filename
 
         else:
-            click.secho("The script could not find the directory specified, Perhaps it is not a directory?", fg="red")
-            # TODO: ask user if he wants to download in the current directory
+            click.secho("The directory does not exist or is not a folder.", fg="red")
             value = click.prompt("Download in the current directory? Y/n", default="y", type=str).lower()
             if value in ("y","yes", "true"):
                 click.secho("Downloading files in the current directory!")
@@ -339,12 +342,12 @@ def downloadBinAsTAR(binid, path):
                 return
             
     if path == "root":
-        fullpath = "archive.tar"
+        fullpath = Path(filename)
 
         #TODO: change the archive name so multiple downloads can be supported
         
 
-    value = click.prompt("Are you sure you want to DOWNLOAD all contents of the bin in TAR archive? Y/n?",type=str, default="n").lower()
+    value = click.prompt(f"DOWNLOAD all contents of the bin in {type} archive? Y/n? (default=yes)",type=str, default="y").lower()
 
     if value in ("y","yes", "true"):
         click.secho("Downloading the bin...")
@@ -352,7 +355,7 @@ def downloadBinAsTAR(binid, path):
         click.secho("Aborting the script!")
         return
    
-    downloadArchiveHelper(binid, "zip", fullpath)
+    downloadArchiveHelper(binid, type, fullpath)
 
 
 
@@ -362,7 +365,7 @@ cli.add_command(downloadFile)
 cli.add_command(uploadFile)
 cli.add_command(lockBin)
 cli.add_command(deleteBin)
-cli.add_command(downloadBinAsTAR)
+cli.add_command(downloadBinAsArchive)
 #TODO: add the commands to download the bin in tar or zip archive
 
 

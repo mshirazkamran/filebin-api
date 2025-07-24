@@ -1,7 +1,7 @@
 
 import click
 import requests
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 
@@ -174,19 +174,36 @@ def downloadArchiveHelper(binid, type, path):
             })
         
         status = response.status_code
+
+
         
         # as total file size is unknown we are using an indeterminate bar which delivers a good UX
         if status == 200:
-            with open(path, "wb") as f, click.progressbar(length=0, label="Downloading (Unknown size)") as bar:
+
+            # These are ued to show a random progress bar which is better than no progress bar
+            bar_length = 16384
+            increment = 2
+            progress = 0
+
+            click.secho("The progess bar is random!! because the total length of archive is unknown", fg="red")
+
+            with open(path, "wb") as f, click.progressbar(length=bar_length, label="Downloading (unknown size)") as bar:
                 for chunk in response.iter_content(chunk_size=4096):
                     if chunk:
                         f.write(chunk)
-                        bar.update(len(chunk))  # no total length, just track bytes downloaded
-        
+
+                        # Artificial progress update (max up to 99)
+                        if progress < bar_length - 2048:
+                            progress += increment
+                            bar.update(increment)
+
+                # Final update to complete the random bar
+                bar.update(bar_length - progress)
+
             click.secho("Successfully downloaded file", fg="green")
         
         elif  status == 404:
-            click.secho(f"The bin: xltux6fjvb9rkhyu does not exist or is not available", fg="red")
+            click.secho(f"The bin: {binid} does not exist or is not available", fg="red")
         else:
             click.secho("An error occured with the request, Please contact fbin dev!", fg = "red")
 
@@ -194,3 +211,11 @@ def downloadArchiveHelper(binid, type, path):
         click.secho("Some error occured while downloading, Please contact fbin dev", fg = "red")
 
     
+def tempFilenameGenerator(type: str) -> str:
+
+    if type.lower() not in {"tar", "zip"}:
+        raise ValueError("Unsupported archive type. Only 'tar' and 'zip' are allowed.")
+
+    now = datetime.now()
+    formattedTime = now.strftime("%d%B_%H-%M-%S") 
+    return f"{formattedTime}.{type}"
