@@ -15,9 +15,10 @@ def getMapping(shortCode):
             })
         
         jsonData = response.json()
+        # print(jsonData)
 
         if response.status_code == 200:
-            return (jsonData.get("binid", None))
+            return (jsonData.get('binid'), None)
         
         elif response.status_code == 400:
             return (None, jsonData.get("error"))
@@ -42,9 +43,10 @@ def generateEncodingFromServer(binid):
     try:
         response = requests.post(f"https://filebin-api-backend.onrender.com/generate", 
             headers = {
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "Content-type": "application/json"
             },
-            data = {
+            json = {
                 "binid": binid,
             })
 
@@ -82,11 +84,11 @@ def isShortCode(binid: str):
 # def persistShortCode(res) -> None:
      
 #     if res is None:
-#         click.echo("Server issued a faulty code. Please contact the fbin dev")
+#         click.secho("Server issued a faulty code. Please contact the fbin dev")
 #         return
 
 #     if res["binid"] and res["code"] and res["ttl"]:
-#         click.echo("Storing code...")
+#         click.secho("Storing code...")
 #         filepath = getDataFile()
 
 #         key = res["code"]
@@ -108,7 +110,7 @@ def isShortCode(binid: str):
 #             try:
 #                 jsonData = json.load(f)
 #             except JSONDecodeError as e:
-#                 click.echo("Invalid JSON data file, please contact fbin team")
+#                 click.secho("Invalid JSON data file, please contact fbin team")
 #                 jsonData = {}
 
 #     else: 

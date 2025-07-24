@@ -1,12 +1,11 @@
+from email.policy import default
 import requests
 import click
 from pathlib import Path
-
 from re import fullmatch
-
 import pkg_resources
 
-from .utils import formatFileDetails, uploadFileHelper, downloadFileHelper
+from .utils import downloadArchiveHelper, formatFileDetails, uploadFileHelper, downloadFileHelper
 from .encoding import isShortCode, generateEncodingFromServer, getMapping
 
 
@@ -30,7 +29,7 @@ def getFilebinURL() -> tuple:
     url: str = temp[start_index:end_index]
     finalURL = url.strip().rstrip('";')
 
-    if fullmatch("[a-zA-Z0-9]+", finalURL) and len(finalURL) <= 18:
+    if len(finalURL) >= 19:
         click.secho("Error getting filebin url, contact fbin dev", fg="red")
         return (None, None)
 
@@ -41,25 +40,27 @@ def getFilebinURL() -> tuple:
         return(None, None);
 
 
-    # click.echo("final url is: " + finalURL)
+    # click.secho("final url is: " + finalURL)
 
     return (finalURL, finalShortCode)
 
 
 
 @click.command(name = "upload", help = "Upload 1 or many files to the bin. Note that There is a limit to filesize.")
-@click.option("--binid", help = "Upload files to a bin. The bin is auto created if not specified with the --binid flag", default = None)
+@click.option("--binid", "-b", help = "Upload files to a bin. The bin is auto created if not specified with the --binid flag", default = None)
 @click.argument("paths", nargs = -1)
 def uploadFile(binid, paths: tuple ) -> None:
 
-    if isShortCode(binid):
-        data, error = getMapping(binid)
+    if binid is not None:
+        if isShortCode(binid):
+            data, error = getMapping(binid)
 
-        if error is not None:
-            click.secho(error, err=True, fg="red")
-            return
-        
-        binid = data
+            if error is not None:
+                click.secho(error, fg="red")
+                return
+            
+            shortcode = binid
+            binid = data
 
 
     if len(paths) == 0:
@@ -71,7 +72,7 @@ def uploadFile(binid, paths: tuple ) -> None:
     for path in paths:
         checkPath: Path = Path(path) 
         if not checkPath.exists() or not checkPath.is_file():
-            click.secho(f"The script can not find the file: {checkPath.resolve()}, Perhaps you entered a directory? \n ", err=True)
+            click.secho(f"The script can not find the file: {checkPath.resolve()}, Perhaps you entered a directory? \n ", fg="red")
             break
 
         filename: str = checkPath.name; # extract filename from paths  
@@ -92,14 +93,14 @@ def uploadFile(binid, paths: tuple ) -> None:
 
     # Upload files one by one from the dictionary 
     for name, path in fpaths.items():
-        uploadFileHelper(path, binid, name)
+        uploadFileHelper(binid, path, name)
 
     
     click.secho(f"NOTE: Your short code to use this bin is: {shortcode}", fg="green")
     click.secho(f"You can use {shortcode} instead of the original binid", fg="green")
 
 
-@click.command(name = "details")
+@click.command(name = "details", help = "Show the file contents of the bin")
 @click.argument("binid")
 @click.option("--details", "-d", is_flag = True, default = False, help = "Print detailed metadata of files in the sepcified bin")
 def getBinDetails(binid, details: bool):
@@ -108,12 +109,12 @@ def getBinDetails(binid, details: bool):
         data, error = getMapping(binid)
 
         if error is not None:
-            click.secho(error, err=True, fg="red")
+            click.secho(error, fg="red")
             return
         
         binid = data
 
-    click.echo(f"fetching details of: https://filebin.net/{binid}");
+    click.secho(f"fetching details of: https://filebin.net/{binid}");
     try: 
         response = requests.get(f"https://filebin.net/{binid}", headers={
             "accept": "application/json"
@@ -122,7 +123,7 @@ def getBinDetails(binid, details: bool):
         files = []
 
         if response.status_code == 200:
-            click.secho("Response was successfull!", fg="green")
+            # click.secho("Response was successfull!", fg="green")
             json_data = response.json()
             json_files = json_data["files"]
 
@@ -158,30 +159,35 @@ def getBinDetails(binid, details: bool):
          
 
     except Exception as e:
-        click.echo(f"An error occured while fetching from the bin: {binid}", err=True)
-        # click.echo(e.with_traceback)
+        click.secho(f"An error occured while fetching from the bin: {binid}", fg="red")
+        # click.secho(e.with_traceback)
 
 
 #TODO: use this in the getdetails method and also as a standalone command
-@click.command(name = "download", help = "Use this to download files using their binid and the exact names of the file to download, refer to details command for knowing the filenames (interactive download will be added in future)")
-@click.argument("binid")
+@click.command(name = "download", help = "Download files using their binid and the exact names of the file to download, refer to details command for knowing the filenames (interactive download will be added in future)")
+@click.option("--binid", "-b", required=True, help="The bin to downlaod the files from, You can also use shortcode")
 @click.argument("filenames", nargs=-1)
 @click.option("--path", "-p", default="root", help="The path to download the file to. File is downloaded in root dir if path is not specified ")
 def downloadFile(binid, filenames: tuple, path: str) -> None:
+
+    if binid is None:
+        click.secho("No binid specified. Pleas provide the binid", fg = "red")
+
 
     if isShortCode(binid):
         data, error = getMapping(binid)
 
         if error is not None:
-            click.secho(error, err=True, fg="red")
+            click.secho(error, fg="red")
             return
         
         binid = data
         
 
     if not filenames:
-        click.secho("No files specified. Pleas provide atleast one", err = True)
+        click.secho("No files specified. Pleas provide atleast one", fg = "red")
         return
+
 
     tempPaths = []
 
@@ -196,14 +202,14 @@ def downloadFile(binid, filenames: tuple, path: str) -> None:
             # fullpath = savePath / filename
 
         else:
-            click.echo("The script could not find the directory specified, Perhaps it is not a directory?", err=True)
+            click.secho("The script could not find the directory specified, Perhaps it is not a directory?", fg="red")
             # TODO: ask user if he wants to download in the current directory
             value = click.prompt("Download in the current directory? Y/n", default="y", type=str).lower()
             if value in ("y","yes", "true"):
-                click.echo("Downloading files in the current directory!")
+                click.secho("Downloading files in the current directory!")
                 path = "root"
             else:
-                click.echo("Aborting the script...")
+                click.secho("Aborting the script...")
                 return
 
 
@@ -226,7 +232,7 @@ def lockBin(binid) -> None:
         data, error = getMapping(binid)
 
         if error is not None:
-            click.secho(error, err=True, fg="red")
+            click.secho(error, fg="red")
             return
         
         binid = data
@@ -234,9 +240,9 @@ def lockBin(binid) -> None:
     value = click.prompt("This option is undoable, Are you sure you want to LOCK the bin? Y/n?",type=str, default="n").lower()
 
     if value in ("y","yes", "true"):
-        click.echo("Locking the bin...")
+        click.secho("Locking the bin...")
     else:
-        click.echo("Aborting the script!")
+        click.secho("Aborting the script!")
         return
 
     try:
@@ -250,13 +256,13 @@ def lockBin(binid) -> None:
         if status == 200:
             click.secho(f"Successfully locked the bin: {binid}", fg="green")
         elif status == 404:
-            click.secho(f"The bin: {binid} does not exist or is not available", err=True)
+            click.secho(f"The bin: {binid} does not exist or is not available", fg="red")
         else:
-            click.secho(f"An error occured: {status}", err=True)
+            click.secho(f"An error occured: {status}", fg="red")
 
     except Exception as e:
         click.secho("Some error occured!", err = True)
-        # click.echo(e)
+        # click.secho(e)
 
 
 @click.command(name = "delete", help = "This will delete all files from a bin. It is not possible to reuse a bin that has been deleted. Everyone knowing the URL to the bin have access to delete it")
@@ -267,7 +273,7 @@ def deleteBin(binid) -> None:
         data, error = getMapping(binid)
 
         if error is not None:
-            click.secho(error, err=True, fg="red")
+            click.secho(error, fg="red")
             return
         
         binid = data
@@ -276,9 +282,9 @@ def deleteBin(binid) -> None:
     value = click.prompt("This option is undoable, Are you sure you want to DELETE the bin? Y/n?",type=str, default="n").lower()
 
     if value in ("y","yes", "true"):
-        click.echo("Deleting the bin...")
+        click.secho("Deleting the bin...")
     else:
-        click.echo("Aborting the script!")
+        click.secho("Aborting the script!")
         return
     
     try:
@@ -292,13 +298,61 @@ def deleteBin(binid) -> None:
         if status == 200:
             click.secho(f"Successfully deleted the bin: {binid}", fg="green")
         elif status == 404:
-            click.secho(f"The bin: {binid} does not exist or is not available", err=True)
+            click.secho(f"The bin: {binid} does not exist or is not available", fg="red")
         else:
             click.secho("An error occured!", err = True)
 
     except Exception as e:
         click.secho("Some error occured!", err = True)
-        # click.echo(e)
+        # click.secho(e)
+
+
+@click.command(name = "tar", help = "Get all the files of the bin in tar archive")
+@click.argument("binid")
+@click.option("--path", "-p",default="root", help="The path to download the archive to")
+def downloadBinAsTAR(binid, path):
+
+    if isShortCode(binid):
+        data, error = getMapping(binid)
+
+        if error is not None:
+            click.secho(error, fg="red")
+            return
+        
+        binid = data
+
+
+    if path != "root":
+        savePath = Path(path)
+        if savePath.exists() and savePath.is_dir():
+            fullpath = savePath / "archive.tar"
+
+        else:
+            click.secho("The script could not find the directory specified, Perhaps it is not a directory?", fg="red")
+            # TODO: ask user if he wants to download in the current directory
+            value = click.prompt("Download in the current directory? Y/n", default="y", type=str).lower()
+            if value in ("y","yes", "true"):
+                click.secho("Downloading files in the current directory!")
+                path = "root"
+            else:
+                click.secho("Aborting the script...")
+                return
+            
+    if path == "root":
+        fullpath = "archive.tar"
+
+        #TODO: change the archive name so multiple downloads can be supported
+        
+
+    value = click.prompt("Are you sure you want to DOWNLOAD all contents of the bin in TAR archive? Y/n?",type=str, default="n").lower()
+
+    if value in ("y","yes", "true"):
+        click.secho("Downloading the bin...")
+    else:
+        click.secho("Aborting the script!")
+        return
+   
+    downloadArchiveHelper(binid, "zip", fullpath)
 
 
 
@@ -308,6 +362,7 @@ cli.add_command(downloadFile)
 cli.add_command(uploadFile)
 cli.add_command(lockBin)
 cli.add_command(deleteBin)
+cli.add_command(downloadBinAsTAR)
 #TODO: add the commands to download the bin in tar or zip archive
 
 

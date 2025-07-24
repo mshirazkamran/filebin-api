@@ -11,7 +11,7 @@ authors = [
   { name="M. Shiraz Kamran", email="dev.mshiraz@gmail.com" },
 ]
 description = "A cli tool to temporarily share file without any hassle. Uses filebin.net public api"
-readme = "README.md"
+readme = "pypi.md"
 requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -29,4 +29,3 @@ fbin = "filebin.main:main" # 'command = module:function'
 
 [project.urls]
 "Source" = "https://github.com/mshirazkamran/filebin-cli"
-"Docs" = "https://github.com/mshirazkamran/filebin-api?tab=readme-ov-file#-filebin-cli"
