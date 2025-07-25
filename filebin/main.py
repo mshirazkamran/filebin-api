@@ -1,8 +1,7 @@
-from email.policy import default
+import time
 import requests
 import click
 from pathlib import Path
-from re import fullmatch
 import pkg_resources
 
 from .utils import downloadArchiveHelper, formatFileDetails
@@ -19,7 +18,11 @@ def cli() -> None:
 
 def getFilebinURL() -> tuple:
 
-    req = requests.get("https://filebin.net")
+    req = requests.get("https://filebin.net",
+         headers= {
+                     "User-Agent": "curl/7.68.0"  # ← mimic curl 
+
+    })
     binURL_index: int = str(req.text).find("binURL")  # Find the position of 'binURL'
 
     # Calculate the start and end indices to extract the URL
@@ -79,7 +82,6 @@ def uploadFile(binid, paths: tuple ) -> None:
         filename: str = checkPath.name; # extract filename from paths  
         fpaths[filename] = checkPath
 
-        # uploadFileHelper(checkPath, binid, filename)
 
     if binid is None:
         click.secho("Creating a bin...", bold = True)
@@ -95,10 +97,11 @@ def uploadFile(binid, paths: tuple ) -> None:
     # Upload files one by one from the dictionary 
     for name, path in fpaths.items():
         uploadFileHelper(binid, path, name)
+        time.sleep(1.5)
 
-    
-    click.secho(f"NOTE: Your short code to use this bin is: {shortcode}", fg="green")
-    click.secho(f"You can use {shortcode} instead of the original binid", fg="green")
+    if isShortCode(binid):
+        click.secho(f"NOTE: Your short code to use this bin is: {shortcode}", fg="green")
+        click.secho(f"You can use {shortcode} instead of the original binid", fg="green")
 
 
 @click.command(name = "details", help = "Show the file contents of the bin")
@@ -118,7 +121,8 @@ def getBinDetails(binid, details: bool):
     click.secho(f"fetching details of: https://filebin.net/{binid}");
     try: 
         response = requests.get(f"https://filebin.net/{binid}", headers={
-            "accept": "application/json"
+            "accept": "application/json",
+            "User-Agent": "curl/7.68.0"  # ← mimic curl 
         })
 
         files = []
@@ -160,7 +164,7 @@ def getBinDetails(binid, details: bool):
          
 
     except Exception as e:
-        click.secho(f"An error occured while fetching from the bin: {binid}", fg="red")
+        click.secho(f"An error occured while fetching from the bin: {binid}, is it correct binid or shortcode?", fg="red")
         # click.secho(e.with_traceback)
 
 
@@ -249,7 +253,8 @@ def lockBin(binid) -> None:
     try:
         response = requests.put(f"https://filebin.net/{binid}", 
             headers = {
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "User-Agent": "curl/7.68.0"  # ← mimic curl 
             })
 
         status = response.status_code
@@ -291,7 +296,9 @@ def deleteBin(binid) -> None:
     try:
         response = requests.delete(f"https://filebin.net/{binid}", 
             headers = {
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "User-Agent": "curl/7.68.0"  # ← mimic curl 
+
             })
 
         status = response.status_code
@@ -311,7 +318,7 @@ def deleteBin(binid) -> None:
 @click.command(name = "archive", help = "Get all the files of the bin in zip or tar archive")
 @click.argument("binid")
 @click.option("--path", "-p", default="root", help="The path to download the archive to")
-@click.option("--type", "-t", required=True, type=click.Choice(["tar", "zip"]), help="Archive type")
+@click.option("--type", "-t", required=True, default="zip", type=click.Choice(["tar", "zip"]), help="Archive type")
 def downloadBinAsArchive(binid, path, type):
 
     filename = tempFilenameGenerator(type)

@@ -94,7 +94,8 @@ def uploadFileHelper(binid, path, filename):
                 , data = contents
                 , headers = {
                     "Content-Type": "application/octet-stream",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+                    "User-Agent": "curl/7.68.0"  # ← mimic curl 
                 });
     
         status = response.status_code
@@ -203,7 +204,7 @@ def downloadArchiveHelper(binid, type, path):
             click.secho("Successfully downloaded file", fg="green")
         
         elif  status == 404:
-            click.secho(f"The bin: {binid} does not exist or is not available", fg="red")
+            click.secho(f"An error occured while fetching from the bin: {binid}, is it correct binid or shortcode?", fg="red")
         else:
             click.secho("An error occured with the request, Please contact fbin dev!", fg = "red")
 

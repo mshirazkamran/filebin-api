@@ -1,5 +1,3 @@
-# TODO: need to chnage the links of source and Homepage
-
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -12,7 +10,7 @@ authors = [
 ]
 description = "A cli tool to temporarily share file without any hassle. Uses filebin.net public api"
 readme = "pypi.md"
-requires-python = ">=3.6"
+requires-python = ">=3.7.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -20,12 +18,13 @@ classifiers = [
 keywords = ["cli", "filebin", "file-sharing", "temporary-files"] 
 
 dependencies = [
-    "click",
-    "requests",
+    "click>=7.1.2,<9.0",
+    "requests>=2.25.1,<3.0",
 ]
 
 [project.scripts]
 fbin = "filebin.main:main" # 'command = module:function'
 
 [project.urls]
-"Source" = "https://github.com/mshirazkamran/filebin-cli"
+"Repository" = "https://github.com/mshirazkamran/filebin-cli"
+"Documentation" = "https://github.com/mshirazkamran/filebin-api?tab=readme-ov-file#-filebin-cli"
