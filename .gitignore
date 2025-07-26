@@ -3,3 +3,4 @@ __pycache__/
 .vscode/
 filebin_cli.egg-info
 z.py
+.pyirc
