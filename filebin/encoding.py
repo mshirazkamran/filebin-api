@@ -72,13 +72,6 @@ def isShortCode(binid: str):
     return ("-" in binid)
 
 
-#TODO: implement a function to clear ttl expired entries
-
-# add db
-# add shortcode-to-binid endpoint 
-# add ping endpoint 
-
-
 
 
 # def persistShortCode(res) -> None:

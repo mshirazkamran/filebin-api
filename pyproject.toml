@@ -6,16 +6,23 @@ build-backend = "setuptools.build_meta"
 name = "filebin-cli"
 version = "0.3"
 authors = [
-  { name="M. Shiraz Kamran", email="dev.mshiraz@gmail.com" },
+  { name="M. Shiraz Kamran", email="dev.mshiraz@gmail.com" }
 ]
 description = "A cli tool to temporarily share file without any hassle. Uses filebin.net public api"
 readme = "pypi.md"
 requires-python = ">=3.7.9"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: MIT License", 
     "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Utilities"
 ]
-keywords = ["cli", "filebin", "file-sharing", "temporary-files"] 
+keywords = ["cli", "filebin", "file-sharing", "temporary-files", "command line application", "click"] 
 
 dependencies = [
     "click>=7.1.2,<9.0",

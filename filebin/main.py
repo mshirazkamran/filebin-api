@@ -4,7 +4,7 @@ import click
 from pathlib import Path
 import pkg_resources
 
-from .utils import downloadArchiveHelper, formatFileDetails
+from .utils import downloadArchiveHelper, formatFileDetails, isValidBinid
 from .utils import uploadFileHelper, downloadFileHelper, tempFilenameGenerator
 from .encoding import isShortCode, generateEncodingFromServer, getMapping
 
@@ -55,17 +55,28 @@ def getFilebinURL() -> tuple:
 @click.argument("paths", nargs = -1)
 def uploadFile(binid, paths: tuple ) -> None:
 
+    isCode = False
+
     if binid is not None:
+
         if isShortCode(binid):
-            data, error = getMapping(binid)
+            # because user entered a shortcode, we need to get the correspoinding valid binid
+            validBinid, error = getMapping(binid)
 
             if error is not None:
                 click.secho(error, fg="red")
                 return
             
+            isCode = True
             shortcode = binid
-            binid = data
-
+            binid = validBinid
+        
+        elif not isValidBinid(binid):
+            
+            shortcode = binid
+            click.secho("Invalid binid entered.", fg="red")
+            return
+            
 
     if len(paths) == 0:
         click.secho("No files specified. Please specify atleast one file", err = True, fg="red")
@@ -80,7 +91,7 @@ def uploadFile(binid, paths: tuple ) -> None:
             break
 
         filename: str = checkPath.name; # extract filename from paths  
-        fpaths[filename] = checkPath
+        fpaths[filename] = checkPath # setup the dictionary as so, {filename: path}
 
 
     if binid is None:
@@ -96,10 +107,14 @@ def uploadFile(binid, paths: tuple ) -> None:
 
     # Upload files one by one from the dictionary 
     for name, path in fpaths.items():
-        uploadFileHelper(binid, path, name)
-        time.sleep(1.5)
+        result = uploadFileHelper(binid, path, name)
+        time.sleep(0.2)
 
-    if isShortCode(binid):
+    if isCode is True:
+        click.secho(f"NOTE: Your short code to use this bin is: {shortcode}", fg="green")
+        click.secho(f"You can use {shortcode} instead of the original binid", fg="green")
+
+    elif isCode is False and result is True:
         click.secho(f"NOTE: Your short code to use this bin is: {shortcode}", fg="green")
         click.secho(f"You can use {shortcode} instead of the original binid", fg="green")
 
@@ -204,12 +219,10 @@ def downloadFile(binid, filenames: tuple, path: str) -> None:
         if savePath.exists() and savePath.is_dir():
             for file in filenames:
                 tempPaths.append(savePath / file)
-            # fullpath = savePath / filename
 
         else:
-            click.secho("The script could not find the directory specified, Perhaps it is not a directory?", fg="red")
-            # TODO: ask user if he wants to download in the current directory
-            value = click.prompt("Download in the current directory? Y/n", default="y", type=str).lower()
+            click.secho("The script could not find the directory specified, Are you sure it's a directory?", fg="red")
+            value = click.prompt("Download in the current directory? Y/n, , default =", default="y", type=str).lower()
             if value in ("y","yes", "true"):
                 click.secho("Downloading files in the current directory!")
                 path = "root"
@@ -242,7 +255,7 @@ def lockBin(binid) -> None:
         
         binid = data
 
-    value = click.prompt("This option is undoable, Are you sure you want to LOCK the bin? Y/n?",type=str, default="n").lower()
+    value = click.prompt("This option is undoable, Are you sure you want to LOCK the bin? Y/n?, default =",type=str, default="n").lower()
 
     if value in ("y","yes", "true"):
         click.secho("Locking the bin...")
@@ -285,7 +298,7 @@ def deleteBin(binid) -> None:
         binid = data
 
 
-    value = click.prompt("This option is undoable, Are you sure you want to DELETE the bin? Y/n?",type=str, default="n").lower()
+    value = click.prompt("This option is undoable, Are you sure you want to DELETE the bin? Y/n?, default =",type=str, default="n").lower()
 
     if value in ("y","yes", "true"):
         click.secho("Deleting the bin...")
@@ -350,8 +363,6 @@ def downloadBinAsArchive(binid, path, type):
             
     if path == "root":
         fullpath = Path(filename)
-
-        #TODO: change the archive name so multiple downloads can be supported
         
 
     value = click.prompt(f"DOWNLOAD all contents of the bin in {type} archive? Y/n? (default=yes)",type=str, default="y").lower()
@@ -373,7 +384,6 @@ cli.add_command(uploadFile)
 cli.add_command(lockBin)
 cli.add_command(deleteBin)
 cli.add_command(downloadBinAsArchive)
-#TODO: add the commands to download the bin in tar or zip archive
 
 
 

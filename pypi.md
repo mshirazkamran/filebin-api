@@ -17,8 +17,7 @@ This tool allows you to upload, download, and manage files and bins directly fro
 ## 📝 Changelog
 
 ### v0.3
-- Added support for **shortcode integration** to access bins more easily.
-- Tested for python **3.7.9**
+- Added integration for **shortcode integration** to access bins more easily.
 - Added archive download commands
 
 ### v0.2

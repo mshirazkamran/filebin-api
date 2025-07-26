@@ -1,4 +1,5 @@
 
+import re
 import click
 import requests
 from datetime import datetime
@@ -101,27 +102,35 @@ def uploadFileHelper(binid, path, filename):
         status = response.status_code
         if status == 201:
             click.secho(f"Successfully uploaded file: {filename} at: https://filebin.net/{binid}/{filename}", fg="green")
+            return True
 
         elif status == 400:
             click.secho("Invalid input, typically invalid bin or filename specified", fg="red")
+            return False
 
         elif status == 403:
             click.secho("Max storage limit was reached", fg="red")
+            return False
 
         elif status == 404:
             click.secho("Page not found", fg="red")
+            return False
 
         elif status == 405:
             click.secho("The bin is locked and can't be written to", fg="red")
+            return False
 
         elif status == 500:
             click.secho("Internal server error", fg="red")
+            return False
 
         else:
             click.secho(f"Error occured, code: {status}", fg="red")
+            return False
 
     except Exception as e:
         click.secho(f"An error occured while uploading the file, {e}", fg="red")
+        return False
 
 
 def downloadFileHelper(binid, fullpath: Path, filename):
@@ -201,7 +210,7 @@ def downloadArchiveHelper(binid, type, path):
                 # Final update to complete the random bar
                 bar.update(bar_length - progress)
 
-            click.secho("Successfully downloaded file", fg="green")
+            click.secho(f"Successfully downloaded Archive as {type}", fg="green")
         
         elif  status == 404:
             click.secho(f"An error occured while fetching from the bin: {binid}, is it correct binid or shortcode?", fg="red")
@@ -220,3 +229,19 @@ def tempFilenameGenerator(type: str) -> str:
     now = datetime.now()
     formattedTime = now.strftime("%d%B_%H-%M-%S") 
     return f"{formattedTime}.{type}"
+
+
+import re
+
+def isValidBinid(binid) -> bool:
+    if not re.fullmatch(r"[a-zA-Z0-9]+", binid):
+        return False
+    if not re.search(r"[a-z]", binid):
+        return False
+    if not re.search(r"[A-Z]", binid):
+        return False
+    if not re.search(r"\d", binid):
+        return False
+    return True
+
+
