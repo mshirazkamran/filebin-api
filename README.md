@@ -16,6 +16,7 @@ This tool allows you to upload, download, and manage files and bins directly fro
   - [📤 Upload Files](#-upload-files)
   - [📋 Get Bin Details](#-get-bin-details)
   - [📥 Download Files](#-download-files)
+  - [📥 Download Bin as  archive](#️-download-archive)
   - [🛠️ Manage Bins](#️-manage-bins)
 - [🧾 Command Reference](#-command-reference)
   - [`upload`](#upload)
@@ -23,6 +24,7 @@ This tool allows you to upload, download, and manage files and bins directly fro
   - [`download`](#download)
   - [`lock`](#lock)
   - [`delete`](#delete)
+  - [`archive`](#archive)
 - [🔧 Requirements](#-requirements)
 - [🧑‍💻 Author](#-author)
 - [LICENSE](#license)
@@ -33,7 +35,7 @@ This tool allows you to upload, download, and manage files and bins directly fro
 
 - ⬆️ **Upload** one or multiple files to a new or existing bin.
 - ✨ **Shortcode Access**: Use **human-readable shortcodes** like `good-apple81` or `sweet-mango37` instead of remembering long bin IDs.
-- ⬇️ **Download** files with a progress bar.
+- ⬇️ **Download** As simple files or download complete bin as archive (tar and zip supported)
 - ℹ️ **List** the contents of any bin with basic or detailed metadata.
 - 🔒 **Lock** a bin to make it read-only.
 - 🗑️ **Delete** an entire bin permanently.
@@ -76,7 +78,7 @@ Install the tool from PyPI using `pip`:
 * **Upload a file using a shortcode:**
 
     ```bash
-    fbin upload --binid good-apple81 new-file.txt
+    fbin upload -b good-apple81 new-file.txt
     ```
 
 ---
@@ -108,13 +110,13 @@ Install the tool from PyPI using `pip`:
 * **Download a single file from a bin using bin ID:**
 
     ```bash
-    fbin download 3s8h9gqz2d document.pdf
+    fbin download --binid 3s8h9gqz2d document.pdf
     ```
 
 * **Download a single file using shortcode:**
 
     ```bash
-    fbin download sweet-mango37 document.pdf
+    fbin download --binid sweet-mango37 document.pdf
     ```
 
 * **Download multiple files:**
@@ -126,7 +128,29 @@ Install the tool from PyPI using `pip`:
 * **Download files to a specific directory:**
 
     ```bash
-    fbin download good-apple81 archive.zip -p /path/to/my/downloads
+    fbin download good-apple81 main.py -p /path/to/my/downloads
+    ```
+
+---
+
+## 🗜️ Download Archive
+
+* **Download all files from a bin as a ZIP archive (default):**
+
+    ```bash
+    fbin archive A5yv3s8h9gqz2d
+    ```
+
+* **Download all files from a bin as a TAR archive (using shortcode):**
+
+    ```bash
+    fbin archive --type tar good-orange92
+    ```
+
+* **Specify a custom output directory for the archive:**
+
+    ```bash
+    fbin archive --type zip --path ./downloads white-cat12
     ```
 
 ---
@@ -219,6 +243,28 @@ fbin lock BINID_OR_SHORTCODE
 
   * `BINID_OR_SHORTCODE`: The ID or shortcode of the bin to lock.
 
+-----
+### `archive`
+
+Downloads all files in a bin as a `.zip` or `.tar` archive.
+
+**Usage:**
+
+```bash
+fbin archive [OPTIONS] BINID
+```
+
+**Arguments:**
+
+  * `BINID`: The ID of the bin to archive.
+
+**Options:**
+
+  * `--path, -p TEXT`: The destination directory to save the archive (default: `root`).
+  * `--type, -t [tar|zip]`: The archive format to use (required, default: `zip`).
+
+---
+
 ### `delete`
 
 Permanently deletes a bin and all of its contents.
@@ -246,7 +292,7 @@ These will be installed automatically when you install the tool.
 
 ## 🧑‍💻 Author
 
-Made by [@mshirazkamran](https://github.com/mshirazkamran)
+Made and managed by [@mshirazkamran](https://github.com/mshirazkamran)
 
 -----
 
