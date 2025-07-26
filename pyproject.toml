@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "filebin-cli"
-version = "0.3"
+version = "0.3.1"
 authors = [
   { name="M. Shiraz Kamran", email="dev.mshiraz@gmail.com" }
 ]
@@ -32,5 +32,5 @@ dependencies = [
 fbin = "filebin.main:main" # 'command = module:function'
 
 [project.urls]
-"Repository" = "https://github.com/mshirazkamran/filebin-cli"
+"Repository" = "https://github.com/mshirazkamran/filebin-api"
 "Documentation" = "https://github.com/mshirazkamran/filebin-api?tab=readme-ov-file#-filebin-cli"

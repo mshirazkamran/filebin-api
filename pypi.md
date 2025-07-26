@@ -10,11 +10,14 @@ This tool allows you to upload, download, and manage files and bins directly fro
 
 ## 📄 Documentation
 
-👉 [filebin-cli Docs](https://github.com/mshirazkamran/filebin-api?tab=readme-ov-file#-filebin-cli)
+### 👉 [filebin-cli Docs](https://github.com/mshirazkamran/filebin-api?tab=readme-ov-file#-filebin-cli)
 
 ---
 
 ## 📝 Changelog
+
+### v0.3.1
+- minor updates
 
 ### v0.3
 - Added integration for **shortcode integration** to access bins more easily.
