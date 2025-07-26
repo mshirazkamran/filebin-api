@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "filebin-cli"
-version = "0.3.1"
+version = "0.3.2"
 authors = [
   { name="M. Shiraz Kamran", email="dev.mshiraz@gmail.com" }
 ]
@@ -17,6 +17,8 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
     "Environment :: Console",
     "Topic :: Utilities"

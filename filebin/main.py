@@ -2,7 +2,6 @@ import time
 import requests
 import click
 from pathlib import Path
-import pkg_resources
 
 from .utils import downloadArchiveHelper, formatFileDetails, isValidBinid
 from .utils import uploadFileHelper, downloadFileHelper, tempFilenameGenerator
@@ -10,7 +9,7 @@ from .encoding import isShortCode, generateEncodingFromServer, getMapping
 
 
 @click.group()
-@click.version_option(pkg_resources.get_distribution("filebin-cli").version)
+@click.version_option(version="0.3.2")
 def cli() -> None:
     """FILEBIN CLI TOOL"""
     pass
