@@ -4,3 +4,4 @@ __pycache__/
 filebin_cli.egg-info
 z.py
 .pyirc
+dist/
