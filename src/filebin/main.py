@@ -12,7 +12,7 @@ from .encoding import isShortCode, generateEncodingFromServer, getMapping
 @click.version_option(version="0.3.2")
 def cli() -> None:
     """FILEBIN CLI TOOL
-                        A wrapper over the filebin.net REST API.
+        A wrapper over the filebin.net REST API.
         Share Files hassle free. All you need to know to download them is a shortcode
         like sweet-mango45, red-bean91. github: https://github.com/mshirazkamran/filebin-api
     """
@@ -287,7 +287,7 @@ def lockBin(binid) -> None:
         # click.secho(e)
 
 
-@click.command(name = "delete", help = "This will delete all files from a bin. It is not possible to reuse a bin that has been deleted. Everyone knowing the URL to the bin have access to delete it")
+@click.command(name = "delete", help = "Delete all files from a bin. It is not possible to reuse a bin that has been deleted. Everyone knowing the URL to the bin have access to delete it")
 @click.argument("binid")
 def deleteBin(binid) -> None:
 
@@ -356,7 +356,7 @@ def downloadBinAsArchive(binid, path, type):
 
         else:
             click.secho("The directory does not exist or is not a folder.", fg="red")
-            value = click.prompt("Download in the current directory? Y/n", default="y", type=str).lower()
+            value = click.prompt("Download in the current directory? Y/n default =", default="y", type=str).lower()
             if value in ("y","yes", "true"):
                 click.secho("Downloading files in the current directory!")
                 path = "root"
@@ -368,7 +368,7 @@ def downloadBinAsArchive(binid, path, type):
         fullpath = Path(filename)
         
 
-    value = click.prompt(f"DOWNLOAD all contents of the bin in {type} archive? Y/n? (default=yes)",type=str, default="y").lower()
+    value = click.prompt(f"DOWNLOAD all contents of the bin in {type} archive? Y/n? default =",type=str, default="y").lower()
 
     if value in ("y","yes", "true"):
         click.secho("Downloading the bin...")
