@@ -11,7 +11,11 @@ from .encoding import isShortCode, generateEncodingFromServer, getMapping
 @click.group()
 @click.version_option(version="0.3.2")
 def cli() -> None:
-    """FILEBIN CLI TOOL"""
+    """FILEBIN CLI TOOL
+                        A wrapper over the filebin.net REST API.
+        Share Files hassle free. All you need to know to download them is a shortcode
+        like sweet-mango45, red-bean91. github: https://github.com/mshirazkamran/filebin-api
+    """
     pass
 
 
