@@ -1,10 +1,16 @@
-# 📦 filebin-cli
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mshirazkamran/filebin-api/master/images/fbin-logo.png" width="350" alt="logo"/>
+</p>
 
-### A simple and hassle-free CLI tool to **share files temporarily** — upload files directly from your terminal. No login. No setup. Just share the link.
+<h1  align="center">
+  Filebin cli
+</h1>
 
-Built with ❤️ in Python, `filebin-cli` is a simple and convenient command-line interface for interacting with the file-sharing service [filebin.net](https://filebin.net).
+### A cli tool to **share files temporarily** withou any hassle, directly from your terminal. No login. No setup. Just share the **short code** to download on the other machine
 
-This tool allows you to upload, download, and manage files and bins directly from your terminal, featuring progress bars, **shortcodes for bin access**, and full bin management capabilities.
+`filebin-cli` is a command-line interface for interacting with the file-sharing service [filebin.net](https://filebin.net). Python with click is used to make this cli possible.
+
+### It ensures some level of privacy because the bins are made with 16 digit unique alhpanumeric id and only the people with link can access the content
 
 ---
 
@@ -40,16 +46,19 @@ This tool allows you to upload, download, and manage files and bins directly fro
 - 🔒 **Lock** a bin to make it read-only.
 - 🗑️ **Delete** an entire bin permanently.
 
----
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mshirazkamran/filebin-api/master/images/usage.png" width="750"/>
+</p>
+
+## NOTE: Works on python 3.7.9+ due to openssl 1.1.1 dependency
 
 ## Installation
 
-Install the tool from PyPI using `pip`:
-
-
-`pip install filebin-cli`
-
----
+Install the tool from PyPI using pip:
+```
+pip install filebin-cli`
+```
 
 ## Quick Start & Examples
 
