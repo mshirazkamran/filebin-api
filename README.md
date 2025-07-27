@@ -294,8 +294,8 @@ fbin delete BINID_OR_SHORTCODE
 
   * `click`
   * `requests`
-
-These will be installed automatically when you install the tool.
+    
+refer to requirements.txt for more info
 
 -----
 
