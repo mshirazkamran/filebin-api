@@ -62,7 +62,7 @@
 
 Install the tool from PyPI using pip:
 ```
-pip install filebin-cli`
+pip install filebin-cli
 ```
 
 ## Quick Start & Examples
