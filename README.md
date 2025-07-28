@@ -14,6 +14,7 @@
 
 ## 📑 Table of Contents
 
+- [Useful tips](#useful-to-know)
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start & Examples](#quick-start--examples)
