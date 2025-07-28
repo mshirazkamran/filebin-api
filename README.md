@@ -6,11 +6,9 @@
   Filebin cli
 </h1>
 
-### A cli tool to **share files temporarily** withou any hassle, directly from your terminal. No login. No setup. Just share the **short code** to download on the other machine
+### A cli tool to **share files temporarily** without any hassle, directly from your terminal. No login. No setup. Just share the **short code** to download on the other machine. Ensures some privacy (refer to [Useful tips](#useful-to-know) )
 
-`filebin-cli` is a command-line interface for interacting with the file-sharing service [filebin.net](https://filebin.net). Python with click is used to make this cli possible.
-
-### It ensures some level of privacy because the bins are made with 16 digit unique alhpanumeric id and only the people with link can access the content
+ it interacts with the file-sharing service [filebin.net](https://filebin.net).
 
 ---
 
@@ -19,11 +17,11 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start & Examples](#quick-start--examples)
-  - [📤 Upload Files](#-upload-files)
-  - [📋 Get Bin Details](#-get-bin-details)
-  - [📥 Download Files](#-download-files)
-  - [📥 Download Bin as  archive](#️-download-archive)
-  - [🛠️ Manage Bins](#️-manage-bins)
+  - [Upload Files](#-upload-files)
+  - [Get Bin Details](#-get-bin-details)
+  - [Download Files](#-download-files)
+  - [Download Bin as  archive](#️-download-archive)
+  - [Manage Bins](#️-manage-bins)
 - [🧾 Command Reference](#-command-reference)
   - [`upload`](#upload)
   - [`details`](#details)
@@ -36,15 +34,21 @@
 - [LICENSE](#license)
 
 ---
+## Useful To know:
+- Bins are like folders where you can upload files. They can be downloaded, updated with files, locked and deleted
+- Short code is a mapping for bins that allows to remember your bin. eg: sweet-mango16 for binid A904hbhu897SAD4Q
+- Bins are auto deleted after 7 days, that is if not deleted by the user himself
+- Ensures some level of privacy because the bins are made with 16 digit unique alhpanumeric id and only the people having the link(or short code) can access the content
+---
 
 ## Features
 
-- ⬆️ **Upload** one or multiple files to a new or existing bin.
-- ✨ **Shortcode Access**: Use **human-readable shortcodes** like `good-apple81` or `sweet-mango37` instead of remembering long bin IDs.
-- ⬇️ **Download** As simple files or download complete bin as archive (tar and zip supported)
-- ℹ️ **List** the contents of any bin with basic or detailed metadata.
-- 🔒 **Lock** a bin to make it read-only.
-- 🗑️ **Delete** an entire bin permanently.
+- **Upload :** one or multiple files to a new or existing bin.
+- **Shortcode Access :**: Use **human-readable shortcodes** like `good-apple81` or `sweet-mango37` instead of remembering long bin IDs to interact with bins and files.
+- **Download :** As simple files or download complete bin as archive (tar and zip supported)
+- **List :** the contents of any bin with basic or detailed metadata.
+- **Lock :** a bin to make it read-only.
+- **Delete :** an entire bin permanently.
 
 
 <p align="center">
