@@ -139,7 +139,7 @@ def downloadFileHelper(binid, fullpath: Path, filename):
     try: 
         response = requests.get(f"https://filebin.net/{binid}/{filename}", stream=True
         , headers= {
-            "User-Agent": "curl/7.68.0",  # tricks Filebin into skipping the warning page
+            "User-Agent": "curl/7.68.0",  
             "Accept": "*/*"
         })
 
@@ -179,7 +179,7 @@ def downloadArchiveHelper(binid, type, path):
     try:
         response = requests.get(f"https://filebin.net/archive/{binid}/{type}", stream=True, 
             headers = {
-                "User-Agent": "curl/7.68.0",  # tricks Filebin into skipping the warning page
+                "User-Agent": "curl/7.68.0", 
                 "Accept": "*/*"
             })
         
